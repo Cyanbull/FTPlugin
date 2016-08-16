@@ -98,7 +98,7 @@ void CPluginQueryHKOrder::SetTradeReqData(int nCmdID, const Json::Value &jsnVal,
 		TradeAckType ack;
 		ack.head = req.head;
 		ack.head.ddwErrCode = PROTO_ERR_UNKNOWN_ERROR;
-		CA::Unicode2UTF(L"����ʧ��", ack.head.strErrDesc);
+		CA::Unicode2UTF(L"·¢ËÍÊ§°Ü", ack.head.strErrDesc);
 
 		memset(&ack.body, 0, sizeof(ack.body));
 		ack.body.nEnvType = body.nEnvType;
@@ -167,22 +167,25 @@ void CPluginQueryHKOrder::NotifyOnQueryHKOrder(Trade_Env enEnv, UINT32 nCookie, 
 		for ( int n = 0; n < nCount; n++ )
 		{			
 			const Trade_OrderItem &order = pArrOrder[n];
-			QueryHKOrderAckItem item;
-			item.nLocalID = order.nLocalID;
-			item.nOrderID = order.nOrderID;
-			item.nOrderType = order.nType;
-			item.enSide = order.enSide;
-			item.nStatus = order.nStatus;
-			item.strStockCode = order.szCode;
-			item.strStockName = order.szName;
-			item.nPrice = order.nPrice;
-			item.nQty = order.nQty;
-			item.nDealtQty = order.nDealtQty;
-			item.nDealtAvgPrice = int(order.fDealtAvgPrice * 1000);
-			item.nSubmitedTime = order.nSubmitedTime;
-			item.nUpdatedTime = order.nUpdatedTime;
-			item.nErrCode = order.nErrCode;
-			ack.body.vtOrder.push_back(item);
+			if( order.nStatus==Trade_OrderStatus_WaitDeal||order.nStatus==Trade_OrderStatus_PartDealt )	// 只获取等待成交或部分成交订单, 青牛修改于2016.8.16
+			{
+				QueryHKOrderAckItem item;
+				item.nLocalID = order.nLocalID;
+				item.nOrderID = order.nOrderID;
+				item.nOrderType = order.nType;
+				item.enSide = order.enSide;
+				item.nStatus = order.nStatus;
+				item.strStockCode = order.szCode;
+				item.strStockName = order.szName;
+				item.nPrice = order.nPrice;
+				item.nQty = order.nQty;
+				item.nDealtQty = order.nDealtQty;
+				item.nDealtAvgPrice = int(order.fDealtAvgPrice * 1000);
+				item.nSubmitedTime = order.nSubmitedTime;
+				item.nUpdatedTime = order.nUpdatedTime;
+				item.nErrCode = order.nErrCode;
+				ack.body.vtOrder.push_back(item);
+			}
 		}
 	}	 
 	
@@ -232,7 +235,7 @@ void CPluginQueryHKOrder::HandleTimeoutReq()
 			TradeAckType ack;
 			ack.head = pReq->req.head;
 			ack.head.ddwErrCode= PROTO_ERR_SERVER_TIMEROUT;
-			CA::Unicode2UTF(L"Э�鳬ʱ", ack.head.strErrDesc);
+			CA::Unicode2UTF(L"Ð­Òé³¬Ê±", ack.head.strErrDesc);
 
 			//tomodify 5
 			memset(&ack.body, 0, sizeof(ack.body));
